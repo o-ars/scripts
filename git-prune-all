@@ -1,0 +1,11 @@
+#!/bin/bash
+
+$BASEDIR = `pwd`
+
+for d in `pwd`/*; do
+	cd "$d"
+	echo ""
+	pwd
+	git gc --aggressive --prune
+	cd $BASEDIR
+done
