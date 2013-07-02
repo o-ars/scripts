@@ -1,0 +1,72 @@
+#!/usr/bin/env php
+<?php
+$epub_file = $argv[1];
+
+$containerxml_path = "META-INF/container.xml";
+$containerxml_content = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<container version=\"1.0\" xmlns=\"urn:oasis:names:tc:opendocument:xmlns:container\">\n\t<rootfiles>\n\t\t<rootfile full-path=\"OPS/package.opf\" media-type=\"application/oebps-package+xml\" />\n\t</rootfiles>\n</container>";
+$ibooksoptionsxml_path = "META-INF/com.apple.ibooks.display-options.xml";
+$ibooksoptionsxml_content = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<display_options>\n\t<platform name=\"*\">\n\t\t<option name=\"specified-fonts\">true</option>\n\t</platform>\n</display_options>";
+$encyrptionxml_path = "META-INF/encyrption.xml";
+
+$epub_zip = new ZipArchive;
+$which_epub = $epub_zip->open("$epub_file");
+if ($which_epub === TRUE) {
+	$epub_zip->extractTo('.');
+	$epub_zip->close();
+
+	unlink("$containerxml_path");
+	if(file_exists("$encyrptionxml_path")) {
+	unlink("$encyrptionxml_path");
+	}
+
+	rmdir('META-INF');
+	mkdir('META-INF');
+
+	touch("$containerxml_path");
+	$rf = fopen("$containerxml_path", "w");
+	fwrite($rf, $containerxml_content);
+
+	touch("$ibooksoptionsxml_path");
+	$fr = fopen("$ibooksoptionsxml_path", "w");
+	fwrite($fr, $ibooksoptionsxml_content);
+
+	rename('OEBPS', 'OPS');
+
+	$css_files = glob("OPS/css/*.css");
+	$css_namespace = "@namespace epub \"http://www.idpf.org/2007/ops\";\n\n";
+	$cssfile_path = "OPS/css/template.css";
+	foreach ($css_files as $css_file) {
+		rename("$css_file", "$cssfile_path");
+		$ff = fopen($cssfile_path, "w");
+		fwrite($ff, $css_namespace);
+	}
+
+	$bookfile_path = "OPS/book.xhtml";
+	$xhtml_files = glob("OPS/*-1.xhtml");
+	foreach ($xhtml_files as $xhtml_file) {
+		rename("$xhtml_file", "$bookfile_path");
+		$replace = array('class="Normal ' => 'class="',
+						'No-Paragraph-Style ' => '',
+						' xml:lang="en-US"' => '',
+						' xml:lang="en-GB"' => '',
+						'anametin-bastan ' => '',
+						'›' => 'ı',
+						'‹' => 'İ',
+						'€' => 'ğ',
+						'ﬂ' => 'ş',
+						'ﬁ' => 'Ş',
+						'&#9;' => '',
+						'&#173;' => '',
+						'⁄' => 'Ğ',
+						'&#173;' => '',
+						'&#160;' => '');
+		$data = file_get_contents("$bookfile_path");
+		$data = str_replace(array_keys($replace), array_values($replace), $data);
+		file_put_contents("$bookfile_path", $data);
+	}
+
+} else {
+	echo "epub dosyasi bulunamadi.";
+}
+
+?>
