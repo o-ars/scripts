@@ -1,0 +1,10 @@
+#!/bin/bash
+
+inddPath=$(printf '%s\n' "$(pwd -P)/$(basename -- "$1")")
+epubPath=$(printf '%s\n' "$(pwd -P)/$(basename -- "$2")")
+
+#echo $inddPath
+#echo $epubPath
+
+indd-export $inddPath $epubPath
+
