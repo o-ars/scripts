@@ -1,0 +1,21 @@
+#!/bin/bash
+
+
+if [ -z "$1" ]
+
+then
+
+echo "Enter a message!"
+exit
+
+else
+
+echo "Checking in..."
+git add .
+git commit -a -m "$1"
+
+fi
+
+git push
+
+echo "Done!"
