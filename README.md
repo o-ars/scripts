@@ -1,9 +1,1 @@
-scripts
-=======
-
-abc
--
-
-# at
-
-## atb
+useless scripts for anyone
